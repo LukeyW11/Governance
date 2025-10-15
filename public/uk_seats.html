@@ -11,19 +11,6 @@
 
   <script>
     // Initialize Supabase
-    const supabaseUrl = 'https://tjgtbhoiptrjcrextgyl.supabase.co';<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>UK Parliament Seats</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
-</head>
-<body style="font-family:sans-serif; text-align:center; margin-top:50px;">
-  <h1>UK Parliament Seats</h1>
-  <div id="seatsContainer"></div>
-
-  <script>
-    // Initialize Supabase
     const supabaseUrl = 'https://tjgtbhoiptrjcrextgyl.supabase.co';
     const supabaseKey = 'sb_secret_60BokZKoPtUxZ0dqLaXY2w_gum3WqU_';
     const supabase = supabase.createClient(supabaseUrl, supabaseKey);
@@ -52,7 +39,7 @@
         div.appendChild(btn);
 
         const status = document.createElement('p');
-        status.textContent = seat.current_holder_id ? `Seat is occupied` : 'Seat is vacant';
+        status.textContent = seat.current_holder_id ? 'Seat is occupied' : 'Seat is vacant';
         div.appendChild(status);
 
         btn.addEventListener('click', async () => {
@@ -91,86 +78,6 @@
             btn.disabled = true;
           } else {
             status.textContent = "Seat is now occupied!";
-            btn.disabled = true;
-          }
-        });
-
-        container.appendChild(div);
-      });
-    }
-
-    // Load seats on page load
-    loadSeats();
-  </script>
-</body>
-</html>
-
-    const supabaseKey = 'sb_secret_60BokZKoPtUxZ0dqLaXY2w_gum3WqU_';
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-    // Function to load all seats and display them
-    async function loadSeats() {
-      const { data: seats, error } = await supabase
-        .from('seats')
-        .select('id, name, current_holder_id, users(username)')
-        .order('id');
-
-      const container = document.getElementById('seatsContainer');
-      container.innerHTML = '';
-
-      seats.forEach(seat => {
-        const div = document.createElement('div');
-        div.style.marginBottom = '20px';
-
-        const title = document.createElement('h2');
-        title.textContent = seat.name;
-        div.appendChild(title);
-
-        const btn = document.createElement('button');
-        btn.textContent = 'Run for this seat';
-        btn.disabled = seat.current_holder_id !== null;
-        div.appendChild(btn);
-
-        const status = document.createElement('p');
-        status.textContent = seat.current_holder_id ? `Current holder: ${seat.users?.username || 'Unknown'}` : 'Seat is vacant';
-        div.appendChild(status);
-
-        btn.addEventListener('click', async () => {
-          const email = prompt("Enter your email:");
-          const username = prompt("Enter your username:");
-
-          // Sign up or magic login
-          let { data: user, error } = await supabase.auth.signUp({ email });
-          if (error && error.message.includes('already registered')) {
-            await supabase.auth.signInWithOtp({ email });
-            alert("Check your email to log in!");
-            return;
-          } else if (error) {
-            alert("Error: " + error.message);
-            return;
-          }
-
-          // Insert or update user in users table
-          await supabase
-            .from('users')
-            .upsert({ email, username, id: user?.user?.id })
-            .select();
-
-          // Claim the seat if vacant
-          const { data, error: seatError } = await supabase
-            .from('seats')
-            .update({ current_holder_id: user.user.id })
-            .eq('id', seat.id)
-            .is('current_holder_id', null)
-            .select();
-
-          if (seatError) {
-            status.textContent = "Error claiming seat: " + seatError.message;
-          } else if (data.length === 0) {
-            status.textContent = "Seat already taken!";
-            btn.disabled = true;
-          } else {
-            status.textContent = username + " is now the holder!";
             btn.disabled = true;
           }
         });
