@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>UK Parliament Seats</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+</head>
+<body style="font-family:sans-serif; text-align:center; margin-top:50px;">
+  <h1>UK Parliament Seat: Cambridge</h1>
+  <button id="runButton">Run for this seat</button>
+  <p id="status"></p>
+
+  <script>
+    // Initialize Supabase
+    const supabaseUrl = 'YOUR_SUPABASE_URL';
+    const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    const runButton = document.getElementById('runButton');
+    const status = document.getElementById('status');
+
+    runButton.addEventListener('click', async () => {
+      const email = prompt("Enter your email:");
+      const username = prompt("Enter your username:");
+
+      // Sign up or log in the user
+      let { data: user, error } = await supabase.auth.signUp({ email });
+      if (error && error.message.includes('already registered')) {
+        const { data: loginUser } = await supabase.auth.signInWithOtp({ email });
+        status.textContent = "Check your email to log in!";
+        return;
+      } else if (error) {
+        status.textContent = "Error: " + error.message;
+        return;
+      }
+
+      // Insert into users table
+      const { data, error: insertError } = await supabase
+        .from('users')
+        .insert([{ email, username }])
+        .select();
+
+      if (insertError) {
+        status.textContent = "Error: " + insertError.message;
+      } else {
+        status.textContent = username + " is now running for Cambridge!";
+      }
+    });
+  </script>
+</body>
+</html>
